@@ -324,7 +324,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2024-05-12
+                    2024-05-11
                 </div>
                 
 
@@ -338,14 +338,14 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.8k
+                    1.9k
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                    6 分
+                    7 分
                 </div>
                 
 
@@ -423,7 +423,10 @@
 <h3 id="其他配置和插件安装"><a href="#其他配置和插件安装" class="headerlink" title="其他配置和插件安装"></a>其他配置和插件安装</h3><p>还有很多有用的插件可以安装，比如文章搜索、字数统计、代码高亮等等。作者闪烁飞狐在 hexo-theme-matery 仓库的 README 里面已经写的很详细了，这里就不过多赘述。</p>
 <p>对于 Matery 主题的更详细配置，可以更改主题的配置文件 <code>themes/hexo-theme-matery/_config.yml</code>（注意不是根目录下的配置文件）。这里可以修改诸如首页按钮、个人简介、滚动副标题、社交媒体链接、是否现实置顶文章等各种各样的设置，并且注释写的很详细易懂。</p>
 <p>更细致的，对于主题的样式和排版配置，可以修改 <code>themes/hexo-theme-matery/layout</code> 中的文件。例如 <code>_partial/social-link.ejs</code> 中就可以自定义鼠标悬停在社交媒体小 logo 上时显示的提示文字。</p>
-<p>不过目前看起来，代码块的显示似乎还有点问题，不知道发布到公网之后会不会就变好了。</p>
+<p><del>不过目前看起来，代码块的显示似乎还有点问题，不知道发布到公网之后会不会就变好了。</del>（见下）</p>
+<h3 id="关于代码块的配置"><a href="#关于代码块的配置" class="headerlink" title="关于代码块的配置"></a>关于代码块的配置</h3><p>目前看起来的情况是 Matery Theme 中 <code>source/libs/prism/prism.min.css</code> 没有被加载，怀疑是 Hexo 和 Matery Theme 都尝试加载 prismjs 可能会产生冲突（从现象看是这样的，但是具体原因我也不清楚）。</p>
+<p><strong>我的解决方案是这样 hack 一下：把 <code>prism.min.css</code> 里的内容拷贝到 <code>source/css/my.css</code> 里。</strong></p>
+<p>配置文件里定义了 <code>my.css</code> 和 <code>prism.min.css</code> 都需要加载，但是从结果上来看 <code>my.css</code> 确实加载了，而 <code>prism.min.css</code> 却没有。目前仍不知道为什么，不过好消息是至少现在能正常显示代码块了。</p>
 <h2 id="发布至-GitHub-Pages"><a href="#发布至-GitHub-Pages" class="headerlink" title="发布至 GitHub Pages"></a>发布至 GitHub Pages</h2><p>首先，需要创建一个启用 GitHub Pages 的 repo，具体方法可以参照<a target="_blank" rel="noopener" href="https://pages.github.com/">官方教程</a>。</p>
 <p>在 Hexo 这边，需要现安装部署插件：</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">npm</span> <span class="token function">install</span> hexo-deployer-git <span class="token parameter variable">--save</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
@@ -467,7 +470,7 @@ hexo g <span class="token parameter variable">-d</span> <span class="token comme
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://yc-vertex.github.io/blog/blog/2024/05/12/hexo-ge-ren-bo-ke-de-da-jian-he-pei-zhi/">http://yc-vertex.github.io/blog/blog/2024/05/12/hexo-ge-ren-bo-ke-de-da-jian-he-pei-zhi/</a>
+                    <a href="http://yc-vertex.github.io/blog/blog/2024/05/11/hexo-ge-ren-bo-ke-de-da-jian-he-pei-zhi/">http://yc-vertex.github.io/blog/blog/2024/05/11/hexo-ge-ren-bo-ke-de-da-jian-he-pei-zhi/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -557,7 +560,7 @@ hexo g <span class="token parameter variable">-d</span> <span class="token comme
                 <i class="far fa-dot-circle"></i>&nbsp;本篇
             </div>
             <div class="card">
-                <a href="/blog/2024/05/12/hexo-ge-ren-bo-ke-de-da-jian-he-pei-zhi/">
+                <a href="/blog/2024/05/11/hexo-ge-ren-bo-ke-de-da-jian-he-pei-zhi/">
                     <div class="card-image">
                         
                         
@@ -574,7 +577,7 @@ hexo g <span class="token parameter variable">-d</span> <span class="token comme
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-05-12
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-05-11
                             </span>
                         <span class="publish-author">
                             
@@ -808,7 +811,7 @@ hexo g <span class="token parameter variable">-d</span> <span class="token comme
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">1.8k</span>
+                        class="white-color">2k</span>
             
             
             
