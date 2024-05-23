@@ -370,8 +370,8 @@
         <div class="card-content article-card-content">
             <div id="articleContent">
                 <p>项目组之前一直在 VC709 上做 FPGA 原型验证，之前一般用网口或者 FMC 往片上搬数据。但因为之前在阿里实习的时候用 Xilinx Alveo 系列的加速卡，对 PCIe 做 CPU-FPGA 系统比较熟悉，所以最近一期项目打算尝试一下用 PCIe 来做数据搬移。这样的好处是可以像 Alveo 系列加速卡一样做一个完整的 CPU-FPGA 系统，将整个应用的流程全部在一台机器里完成，十分优雅。</p>
-<p><img src="/blog/Xilinx-VC709-PCIe-%E9%85%8D%E7%BD%AE%E4%B8%8E%E8%B0%83%E8%AF%95/computer.jpeg"></p>
-<p>这次拿了一台退休下来的台式机来搞这个事情，配置 AMD 2700X + Nvidia GTX 1660 Super。换了个新机箱（大一点，方便插 FPGA 的外设），还加了条 PCIe 延长线把 FPGA 做成竖插的（板面朝外，方便调试）。 以下记录配置和调试 PCIe 的过程。</p>
+<p><img src="/blog/computer.jpeg"></p>
+<p>这次拿了一台退休下来的台式机来搞这个事情，配置 AMD 2700X + Nvidia GTX 1660 Super。换了个新机箱（大一点，方便插 FPGA 的外设），还加了条 PCIe 延长线把 FPGA 做成竖插的（板面朝外，方便调试）。 以下记录一些配置和调试 PCIe 的过程。</p>
 <h2 id="流程总览"><a href="#流程总览" class="headerlink" title="流程总览"></a>流程总览</h2><ol>
 <li>在 FPGA 上烧录带有 PCIe 接口 IP 的比特流<ul>
 <li>热重启（不断电重启）</li>
@@ -387,7 +387,7 @@
 <h2 id="一个简单的-Demo"><a href="#一个简单的-Demo" class="headerlink" title="一个简单的 Demo"></a>一个简单的 Demo</h2><h3 id="Step-1：FPGA-设计"><a href="#Step-1：FPGA-设计" class="headerlink" title="Step 1：FPGA 设计"></a>Step 1：FPGA 设计</h3><p>按照上面的流程，我们先要给 FPGA 上烧录一个带有 PCIe 接口的设计。我们这里以一个最简单的功能为例：PCIe 直接访问 FPGA 板卡上的 DDR3 Memory。</p>
 <p>使用 XDMA（DMA&#x2F;Bridge Subsystem for PCI Express）作为接口 IP，内部 AXI 总线连接到 MIG（Memory Interface Generator）上，然后以 DDR3 的形式输出，连到板卡上的 DRAM。XDMA 后面会更详细介绍，这里可以简单认为是一个 PCIe 转 AXI 的接口模块。另外，连接 XDMA 和 MIG 时还需要一些时钟和复位的调整，这里不多赘述。</p>
 <p>如果在创建工程时选择了正确的 Board，这里甚至不需要自己写 XDC 约束和管脚约束，因为 Board 信息已经被集成在 Vivado 工具里了，它会自动生成接口名称并且映射到相应管脚上。有一说一，这个功能真的很方便，大赞。</p>
-<p><img src="/blog/Xilinx-VC709-PCIe-%E9%85%8D%E7%BD%AE%E4%B8%8E%E8%B0%83%E8%AF%95/fpga.jpeg" alt="Untitled"></p>
+<p><img src="/blog/fpga.jpeg"></p>
 <p>实际应用场景中，FPGA 上的设计（比如一个加速器核）也需要访问从 PCIe 发过来的数据，所以可以做成顶层接口为 AXI 的加速器，然后加速器和 XDMA 经过一个 AXI Interconnect 连到 MIG 上。当然，也可以不用 DRAM，直接 XDMA 将 PCIe 转 AXI 之后直接写入加速器核里面的 SRAM&#x2F;BRAM。</p>
 <h3 id="Step-2：安装-driver"><a href="#Step-2：安装-driver" class="headerlink" title="Step 2：安装 driver"></a>Step 2：安装 driver</h3><p>在这里 <a target="_blank" rel="noopener" href="https://github.com/Xilinx/dma_ip_drivers">https://github.com/Xilinx/dma_ip_drivers</a> 下载官方的 XDMA 驱动程序，进入 <code>XDMA/linux-kernel</code> 文件夹，参照里面的 README 进行环境配置。</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token builtin class-name">cd</span> xdma
@@ -406,12 +406,12 @@ $ modprobe xdma<span aria-hidden="true" class="line-numbers-rows"><span></span><
 <li><code>ls /dev/xdma*</code>：应当可以看到 XDMA 设备</li>
 </ol>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">ls</span> /dev/xdma*
-/dev/xdma0_c2h_0     /dev/xdma0_events_1   /dev/xdma0_events_15  /dev/xdma0_events_7  /dev/xdma0_h2c_3
-/dev/xdma0_c2h_1     /dev/xdma0_events_10  /dev/xdma0_events_2   /dev/xdma0_events_8  /dev/xdma0_user
-/dev/xdma0_c2h_2     /dev/xdma0_events_11  /dev/xdma0_events_3   /dev/xdma0_events_9  /dev/xdma0_xvc
-/dev/xdma0_c2h_3     /dev/xdma0_events_12  /dev/xdma0_events_4   /dev/xdma0_h2c_0
-/dev/xdma0_control   /dev/xdma0_events_13  /dev/xdma0_events_5   /dev/xdma0_h2c_1
-/dev/xdma0_events_0  /dev/xdma0_events_14  /dev/xdma0_events_6   /dev/xdma0_h2c_2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+/dev/xdma0_c2h_0     /dev/xdma0_events_1   /dev/xdma0_h2c_3
+/dev/xdma0_c2h_1     /dev/xdma0_events_2   /dev/xdma0_user
+/dev/xdma0_c2h_2     /dev/xdma0_events_3   /dev/xdma0_xvc
+/dev/xdma0_c2h_3     /dev/xdma0_h2c_0
+/dev/xdma0_control   /dev/xdma0_h2c_1
+/dev/xdma0_events_0  /dev/xdma0_h2c_2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>其中 <code>h2c</code> 和 <code>c2h</code> 是 CPU 和 FPGA 之间相互传输的通道（c &#x3D; card，h &#x3D; host）；<code>user</code> 是 AXI-Lite 写寄存器的通道；<code>events</code> 是用户中断。所有这些通道都需要在 XDMA IP 中进行配置了才会相应出现。</p>
 <h3 id="Step-5：操作-FPGA-设备"><a href="#Step-5：操作-FPGA-设备" class="headerlink" title="Step 5：操作 FPGA 设备"></a>Step 5：操作 FPGA 设备</h3><p>进入 <code>tools</code> 文件夹，make；接着进入 <code>tests</code> 文件夹，make；然后跑测试脚本 <code>run_test.sh</code> 即可。</p>
